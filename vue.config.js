@@ -19,7 +19,7 @@ module.exports = {
   outputDir: 'dist',
   assetsDir: 'static',
   // eslint-loader 是否在保存的时候检查
-  lintOnSave: true,
+  lintOnSave: false,
   // 是否使用包含运行时编译器的Vue核心的构建
   runtimeCompiler: false,
   // webpack配置

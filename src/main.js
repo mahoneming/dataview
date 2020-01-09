@@ -5,6 +5,7 @@ import store from './store/index';
 
 // require styles
 import "./styles/common.scss";
+import "./assets/less/common.less";
 
 Vue.config.productionTip = false;
 
