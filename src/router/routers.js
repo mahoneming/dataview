@@ -2,8 +2,8 @@
 export default [
   {
     path: '/',
-    name: 'home',
-    component: () => import(/* webpackChunkName: "about" */ '../views/Home.vue'),
+    name: 'index',
+    component: () => import(/* webpackChunkName: "about" */ '../views/index.vue'),
   },
   {
     path: '/about',

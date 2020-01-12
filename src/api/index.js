@@ -17,4 +17,11 @@ export function getNewsList(data) {
         data
     })
 }
+// 天气
+export function getWeather(data) {
+    return axios.request({
+        url: 'http://wthrcdn.etouch.cn/weather_mini?city='+data,
+        method: 'get',
+    })
+}
 

@@ -21,31 +21,47 @@
         text-align: center;
         text-shadow:5px 2px 6px #004878;
     }
+    .now-time{
+        line-height: 20px;
+        color:#00f6ff;
+        width: 200px;
+    }
+    .now-time{
+        position: absolute;
+        line-height: 20px;
+        top: 0;
+        color:#00f6ff;
+        width: 200px;
+    }
     .select-center{
         width: e("calc(100% - 710px)");
+        .center-head{
+            position: relative;
+            .right{
+                right: 10px;
+            }
+            .left{
+                left: 10px;
+            }
+        }
         .echart{
             height: 200px;
-            margin-right: 80px;
-            margin-left: 80px;
-        }
-        li{
-            float: left;
-            width: 25%;
-            height: 100%;
-        }
-        .blue{
-            background: url("../assets/img/bule.png") no-repeat center;
-        }
-        .red{
-            background: url("../assets/img/red.png") no-repeat center;
-        }
-        .yellow{
-            background: url("../assets/img/yellow.png") no-repeat center;
-        }
-        .perpo{
-            background: url("../assets/img/perpo.png") no-repeat center;
+            width: 100%;
         }
     }
+}
+
+.blue{
+    background: url("../assets/img/bule.png") no-repeat center;
+}
+.red{
+    background: url("../assets/img/red.png") no-repeat center;
+}
+.yellow{
+    background: url("../assets/img/yellow.png") no-repeat center;
+}
+.perpo{
+    background: url("../assets/img/perpo.png") no-repeat center;
 }
 .title-name{
   color: #fff;
@@ -77,6 +93,26 @@
 }
 .down-center{
   width: 1050px;
+  position: relative;
+  .bottom-style{
+      position: absolute;
+      bottom: -175px;
+      width: 1050px;
+  }
+  .map-info{
+        width: 200px;
+        height: 255px;
+        position: absolute;
+        right: 50px;
+        top: 35px;
+        background: url('../assets/img/mashright.png') no-repeat center;
+        background-size: 100%;
+        padding: 10px;
+        td{
+            padding: 5px;
+            color: #00f6ff;
+        }
+  }
 }
 .down-right{
   width: 355px;
@@ -123,17 +159,83 @@
     #rateChart{
         height: 200px;
     }
+    .scroll{
+        height: 200px;
+        overflow: hidden;
+        padding: 0 20px;
+        li{
+            color: #fff;
+            font-size: 14px;
+            height: 25px;
+            line-height: 25px;
+            text-align: left;
+        }
+    }
 }
 .map-chart{
   width: 60%;
   height: 100%;
 }
 .build-map{
-  #tutorial{
+  .tutorial{
     width: 1050px;
-    height: 530px;
+    height: 600px;
     z-index: 3;
   }
+}
+.count-center{
+    width: 25%;
+    height: 100%;
+    .color-blue{
+        color: #00f6ff;
+    }
+    .color-red{
+        color: #ff254b;
+    }
+    .color-yellow{
+        color: #ffe001;
+    }
+    .color-perpo{
+        color: #ad46f3;
+    }
+    .new-title{
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 50px;
+    }
+}
+.center-num{
+    width: 100%;
+    height: 30px;
+    margin-top: 96px;
+    overflow: hidden;
+    // background: url("../assets/img/num-content.png") no-repeat center top;
+    li {
+        background: rgba(0,246,255,0.2);
+        width: 20px;
+        font-size: 16px;
+        font-weight: bold;
+        height: 30px;
+        line-height: 30px;
+        position: relative;
+        margin-left: 1px;
+        animation:mymovebige 1s;
+        -webkit-animation:mymovebige 1s;
+    }
+    .no-color{
+        width: 20px;
+        color: rgba(0,0,0,0);
+    }
+}
+@keyframes mymovebige
+{
+    0% { 
+        width: 20px;
+        height: 30px;
+        margin-top: 30px;
+    }
+    100% {
+    }
 }
 </style>
 <template>
@@ -146,13 +248,26 @@
                 <div class="echart"  id="hourChart"></div>
             </div>
             <div class="fl select-center">
-                <p class="title-name">广州白云机场实时数据分析平台</p>
-                <ul class="echart clearfix mgt">
-                    <li class="blue"></li>
-                    <li class="perpo"></li>
-                    <li class="red"></li>
-                    <li class="yellow"></li>
-                </ul>
+                <div class="center-head">
+                    <p class="now-time left">{{nowTime}}</p>
+                    <p class="title-name" @click="changeli">广州白云机场实时数据分析平台</p>
+                     <p class="now-time right">{{forecast}}</p>
+                </div>
+                <div class="echart clearfix mgt">
+                    <div class="count-center fl blue">
+                        <ul class="center-num center">
+                            <li class="color-blue" v-for="(item,index) in nowPeople" :class="{'no-color':item =='i'}" :key="index+item">{{item}}</li>
+                        </ul>
+                        <p class="new-title color-blue">实时旅客</p>
+                    </div>
+                    
+                    <div class="count-center fr yellow">
+                        <ul class="center-num center">
+                            <li class="color-yellow" v-for="(item,index) in nowInternationalPeople" :class="{'no-color':item =='i'}" :key="index+item">{{item}}</li>
+                        </ul>
+                        <p class="new-title color-yellow">实时国际旅客</p>
+                    </div>
+                </div>
             </div>
             <div class="fl top-count">
                 <p class="small-title">航班执行率</p>
@@ -180,20 +295,37 @@
         <div class="down-center fl">
           <!-- 地图 -->
           <div class="build-map">
-            <div id="tutorial"></div>
+            <div id="canvas" class="tutorial"></div>
+            <div id="tooltip" :style="{left:tootipPos.left+'px',top:tootipPos.top+'px',display:tootipPos.display}"></div>
           </div>
-          <div class="clear">
-                <div class="center-count fl">
-                    <p class="small-title">实时航班</p>
-                    <!-- <div class="echart" id="rateChart"></div> -->
+          <div class="map-info">
+                <table>
+                    <tr>
+                        <td>航班进：</td>
+                        <td>99999</td>
+                    </tr>
+                    <tr>
+                        <td>航班出：</td>
+                        <td>99999</td>
+                    </tr>
+                    <tr>
+                        <td>XXXX：</td>
+                        <td>XXXXXXXXXX</td>
+                    </tr>
+                </table>
+          </div>
+          <div class="clearfix bottom-style echart">
+                <div class="count-center fl perpo">
+                    <ul class="center-num center">
+                        <li class="color-perpo" v-for="(item,index) in nowAirs" :class="{'no-color':item =='i'}" :key="index+item">{{item}}</li>
+                    </ul>
+                    <p class="new-title color-perpo" @click="changeMapCenter">实时航班</p>
                 </div>
-                <div class="center-count  fl">
-                    <p class="small-title">仪表盘数据</p>
-                    <div class="echart" id="rateChart"></div>
-                </div>
-                <div class="center-count fl">
-                    <p class="small-title">实时邮货</p>
-                    <!-- <div class="echart" id="rateChart"></div> -->
+                <div class="count-center fr red">
+                    <ul class="center-num center">
+                        <li class="color-red" v-for="(item,index) in nowGoods" :class="{'no-color':item =='i'}" :key="index+item">{{item}}</li>
+                    </ul>
+                    <p class="new-title color-red">实时邮货</p>
                 </div>
           </div>
         </div>
@@ -218,233 +350,257 @@
 </template>
 
 <script>
-var echarts = require("echarts");
-import moment from "moment";
+const blue = '#0780df'     /*主颜色中危*/
+const yellow = '#ff9f35'   /*主颜色高危*/
+const red = '#e6453b'      /*主颜色严重*/
+const grey = '#7289ab'     /*主颜色低危*/
+const skyblue = '#01cbe3'
 
+const toolFunc = p => `
+    <div class="tooltip-wraper">
+        <p><label>时间：</label><span>${p.attack_date}</span></p>
+        <p><label>被攻击资产：</label><span>${p.attacked_domain}</span></p>
+        <p><label>资产IP：</label><span>${p.victim_ip}(${p.attacked_city})</span></p>
+        <p><label>攻击源IP：</label><span>${p.source_ip}(${p.source_city})</span></p>
+        <p><label>攻击方式：</label><span class="red">${p.attack_mode}(${p.alert_level})</span></p>
+        <p><label>攻击次数：</label><span>${p.attack_count}</span></p>
+    </div>
+    `
+var echarts = require("echarts");
+import 'echarts-gl';
+import moment from "moment";
+import { getWeather } from "../api"
+import 'echarts/map/js/world.js'
 export default {
-  name: 'index',
-  data () {
-    return {
-        chartConsume:null,
-        chartBridge:null,
-        rateChart:null,
-        chartBusiness:null,
-        chartHour:null,
-        airRateChart:null,
-        percentChart:null,
-        proportionChart:null,
-    }
-  },
-  mounted(){
-      this.setConsumeTrend();
-      this.setBridgeTrend();
-      this.setGenderPie();
-      this.ratePie();
-      this.setBusinessChart();
-      this.setHourChart();
-      this.setAirRate();
-      this.setPercent();
-      this.setProportion();
-  },
-  methods: {
+    name: 'index',
+    data () {
+        return {
+            //地球
+            chart:null,
+            earthSkin:null,
+            tootipPos:{
+                left:0,
+                top:0,
+                display: 'none'
+            },
+            colors:{
+                '严重':red,
+                '高危':yellow,
+                '中危':blue,
+                '低危':grey,
+            },
+            earthData: [{
+                victim_ip: "430.254.3.192",
+                attacked_point: [116.40, 39.90],
+                attack_date: '2019-06-10 18:40:43',
+                source_ip: '192.168.254.222', 
+                source_point: [123.43, 41.80],
+                alert_level: '严重',           
+                attacked_city: '北京',              
+                source_city: '辽宁',                
+                attack_count: 120,			
+                attacked_domain: 'baidu.com',		
+                attack_mode: 'SQL注入'	
+            },
+            {
+                victim_ip: "43.254.3.192",
+                attacked_point: [113.92, 22.52],    
+                attack_date: '2019-02-18 18:40:43', 
+                source_ip: '192.168.254.208',     
+                source_point: [123.43, 41.80],
+                alert_level: '高危',           
+                attacked_city: '深圳',           
+                source_city: '辽宁',              
+                attack_count: 250,					
+                attacked_domain: 'souhu.com',		
+                attack_mode: 'web登录尝试'
+            },
+            {
+                victim_ip: "43.254.3.192",
+                attacked_point: [84.87, 45.60],    
+                attack_date: '2019-02-18 18:40:43', 
+                source_ip: '192.168.254.208',     
+                source_point: [123.43, 41.80],
+                alert_level: '中危',           
+                attacked_city: '克拉玛依',           
+                source_city: '辽宁',              
+                attack_count: 250,                  
+                attacked_domain: 'souhu.com',       
+                attack_mode: 'web登录尝试'
+            }],
+            tootipEl: document.getElementById('tooltip'),
+            
+            //数量
+            nowPeople:["i","i","i","i","3","5"],
+            nowInternationalPeople:["i","i","i","1","1","5"],
+            nowAirs:["i","i","i","4","1","5"],
+            nowGoods:["i","i","i","i","1","8"],
+            getData:{
+                nowPeople:400,
+                nowInternationalPeople:500,
+                nowAirs:123,
+                nowGoods:790
+            },
+            //时间
+            nowTime:'',
+            timeIntervals:null,
+            forecast:null,
+            //图表
+            chartConsume:null,
+            chartBridge:null,
+            // rateChart:null,
+            chartBusiness:null,
+            chartHour:null,
+            airRateChart:null,
+            percentChart:null,
+            proportionChart:null,
+        }
+    },
+    mounted(){
+        //图表
+        this.setConsumeTrend();
+        this.setBridgeTrend();
+        this.setGenderPie();
+        // this.ratePie();
+        this.setBusinessChart();
+        this.setHourChart();
+        this.setAirRate();
+        this.setPercent();
+        this.setProportion();
+            
+        
+        //日期
+        this.timeIntervals = setInterval(this.getNowTime,1000);
+        //天气
+        let params = {};
+        params.city = '广州';
+        this.getWeather('广州');
+        this.initEarth()
+        this.drawData()
+        this.tootipEl = document.getElementById('tooltip')
+    },
+    methods: {
+        /* 地图函数 */
+        initEarth(){
+            const canvas = document.createElement('canvas');
+            this.earthSkin = echarts.init(canvas, null, {
+                width: 3800,height: 2800
+            });
+            this.earthSkin.setOption({
+                backgroundColor: 'rgba(0,8,34,0.1)',
+                geo: {
+                    map: 'world',
+                    left: 0, top: 0, right: 0, bottom: 0,
+                    boundingCoords: [[-180, 90], [180, -90]],//这是中心坐标点
+                    itemStyle: {
+                    normal: {
+                            areaColor: '#2455ad',
+                            borderColor:'#000c2d',
+                        },
+                        emphasis: {
+                            areaColor: '#357cf8'
+                        }
+                    },
+                    roam: false,
+                    label:{
+                        fontSize:18
+                    }
+                }
+            });
+            this.chart = echarts.init(document.getElementById('canvas'))
+            this.chart.setOption({
+                globe: {
+                    baseTexture: this.earthSkin,
+                    shading: 'color',
+                    top: 'middle',
+                    left: 'center',
+                    globeRadius : 95,
+                    viewControl: {
+                        autoRotate: false,
+                        targetCoord: [116.46, 39.92]
+                    }
+                }
+            },);
+        },
+        changeMapCenter(){
+            this.chart.setOption({
+                globe: {
+                    baseTexture: this.earthSkin,
+                    shading: 'color',
+                    top: 'middle',
+                    left: 'center',
+                    globeRadius : 100,
+                    viewControl: {
+                        autoRotate: false,
+                        targetCoord: [123.43, 41.80]
+                    }
+                }
+            },);
+        },
+        drawData(){
+            this.chart.setOption({
+                series:this.get3Dserv
+            });
+            this.earthSkin.setOption({
+                series:this.get2Dserv
+            })
+        },
+        symbleSize(val){
+            val = val>200?200:val<50?50:val
+            return Math.ceil(val/10)
+        },
+        getPos(e){
+            this.tootipPos.left = e.offsetX
+            this.tootipPos.top = e.offsetY
+        },
+        /* 实时天气 */
+        getWeather(city){
+            getWeather(city).then(res =>{
+                let forecast = res.data.data.forecast;
+                this.forecast = '天气: '+forecast[0].type +' '+ forecast[0].high +' ~ '+forecast[0].low;
+            });
+        },
+        /* 实时日期 */
+        getNowTime(){
+            var vWeek,vWeek_s,vDay,year,month,day,hours,minutes,seconds;
+            vWeek = ["星期天","星期一","星期二","星期三","星期四","星期五","星期六"];
+            var date =  new Date();
+            year = date.getFullYear();
+            month = date.getMonth() + 1;
+            day = date.getDate();
+            hours = date.getHours();
+            minutes = date.getMinutes();
+            seconds = date.getSeconds();
+            vWeek_s = date.getDay();
+            this.nowTime = year + "年" + month + "月" + day + "日" + "\t" + hours + ":" + minutes +":" + seconds + "\t" + vWeek[vWeek_s] ;
+        },
+        /* 实时数量 */
+        changeli(){
+            this.nowPeople = this.getData.nowPeople?this.changeNum(this.getData.nowPeople+"",6):["i","i","i","i","i","i","i"];
+            this.nowInternationalPeople = this.getData.nowInternationalPeople?this.changeNum(this.getData.nowInternationalPeople+"",6):["i","i","i","i","i","i","i"];
+            this.nowAirs = this.getData.nowAirs?this.changeNum(this.getData.nowAirs+"",6):["i","i","i","i","i","i","i"];
+            this.nowGoods = this.getData.nowGoods?this.changeNum(this.getData.nowGoods+"",6):["i","i","i","i","i","i","i"];
+        },
+        /* 数字处理函数 */
+        changeNum(num,count){
+            let chunks = [];
+            let zero = [];
+            for(let i=0;i<num.length;i=i+1){
+                chunks.push(num.slice(i,i+1));
+            }
+            if(chunks.length<count){
+                for(let i = 0; i < count-chunks.length; i++){
+                    zero.push('i')
+                };
+                return zero.concat(chunks);
+            };
+            return chunks;
+        },
         /* 整屏数据请求 */
         timingChange(){
         },
         /* 处理数据 */
         setDateInfo(){
-        },
-        /* 速率仪表盘 */
-        ratePie(){
-            var demoData = [{
-                name: '功率输出',
-                unit: '%',
-                value: 68,
-            }, ];
-            let option = {
-                series: (function() {
-                    var result = [];
-                    demoData.forEach(function(item) {
-                        result.push(
-                            {
-                            name: item.name,
-                            type: 'gauge',
-                            radius: '70%',
-                            startAngle: 225,
-                            endAngle: -45,
-                            min: 0,
-                            max: 110,
-                            axisLine: {
-                                show: true,
-                                lineStyle: {
-                                    width: 30,
-                                    color: [
-                                        [
-                                            item.value / 110, new echarts.graphic.LinearGradient(
-                                                0, 1, 1, 0, [{
-                                                        offset: 0,
-                                                        color: 'rgba(255, 36, 74,0)',
-                                                    }, {
-                                                        offset: 0.3,
-                                                        color: 'rgba(255, 36, 74,0)',
-                                                    },
-                                                    {
-                                                        offset: 1,
-                                                        color: 'rgba(255, 36, 74,1)',
-                                                    }
-                                                ]
-                                            )
-                                        ],
-                                        [
-                                            1, 'rgba(255,255,255,.0)'
-                                        ]
-                                    ]
-                                }
-                            },
-                            axisTick: {
-                                show: 0,
-                            },
-                            splitLine: {
-                                show: 0,
-                            },
-                            axisLabel: {
-                                show: 0
-                            },
-                            pointer: {
-                                show: true,
-                                length: '100%'
-                            },
-                            detail: {
-                                show: true,
-                                offsetCenter: [0, '70%'],
-                                textStyle: {
-                                    fontSize: 24,
-                                    color: '#ff244a'
-                                },
-                                formatter: [
-                                    '{value}' + (item.unit || ''),
-                                    '{name|' + item.name + '}'
-                                ].join('\n'),
-                                rich: {
-                                    name: {
-                                        fontSize: 20,
-                                        lineHeight: 40,
-                                        color: '#fff',
-                                        fontWeight: '100',
-                                    }
-                                }
-                            },
-                            itemStyle: {
-                                color: 'rgba(255, 36, 74,.3)',
-                                borderColor: 'rgba(255, 36, 74,1)',
-                            },
-                            data: [{
-                                value: item.value
-                            }]},
-                            {
-                            name: item.name,
-                            type: 'gauge',
-                            radius: '70%',
-                            startAngle: 225,
-                            endAngle: -45,
-                            min: 0,
-                            max: 110,
-                            axisLine: {
-                                show: false,
-                            },
-                            axisTick: {
-                                show: 0,
-                            },
-                            splitLine: {
-                                show: 0,
-                            },
-                            axisLabel: {
-                                show: 0
-                            },
-                            pointer: {
-                                show: true,
-                                width: 1,
-                                length: '100%'
-                            },
-                            detail: {
-                                show: false,
-                            },
-                            itemStyle: {
-                                color: 'rgba(255, 36, 74,1)',
-                            },
-                            data: [{
-                                value: item.value
-                            }]}, 
-                            {
-                            type: 'gauge',
-                            radius: '90%',
-                            splitNumber: 11,
-                            min: 0,
-                            max: 110,
-                            startAngle: 225,
-                            endAngle: -45,
-                            axisLine: {
-                                show: true,
-                                lineStyle: {
-                                    width: 3,
-                                    shadowBlur: 10,
-                                    color: [
-                                        [0, 'transparent'],
-                                        [0.091, '#0894f6'],
-                                        [0.098, 'transparent'],
-                                        [0.182, '#0894f6'],
-                                        [0.189, 'transparent'],
-                                        [0.273, '#0894f6'],
-                                        [0.28, 'transparent'],
-                                        [0.364, '#0894f6'],
-                                        [0.371, 'transparent'],
-                                        [0.455, '#0894f6'],
-                                        [0.462, 'transparent'],
-                                        [0.546, '#0894f6'],
-                                        [0.553, 'transparent'],
-                                        [0.637, '#0894f6'],
-                                        [0.644, 'transparent'],
-                                        [0.728, '#0894f6'],
-                                        [0.735, 'transparent'],
-                                        [0.819, '#BF18FE'],
-                                        [0.826, 'transparent'],
-                                        [0.91, '#BF18FE'],
-                                        [0.917, 'transparent'],
-                                        [1, '#fd0001']
-                                    ]
-                                }
-                            },
-                            axisLabel: {
-                                textStyle: {
-                                    fontSize: 12,
-                                    fontWeight: ""
-                                }
-                            },
-                            splitLine: {
-                                length: 12,
-                                lineStyle: {
-                                    color: 'auto'
-                                }
-                            },
-                            axisTick: {
-                                length: 8,
-                                lineStyle: {
-                                    color: 'auto'
-                                }
-                            },
-                            pointer: {
-                                show: 0
-                            },
-                            detail: {
-                                show: 0
-                            }
-                        }, );
-                    });
-
-                    return result;
-                })()
-            };
-            this.rateChart = echarts.init(document.getElementById("rateChart"));
-            this.rateChart.setOption(option,"true");
         },
         /* 业务量 */
         setBusinessChart(){
@@ -1231,6 +1387,109 @@ export default {
         },
     },
     beforeDestroy() {
+        if(this.timeInterval!=null){
+            clearInterval(this.timeIntervals);
+            this.timeInterval = null;
+        };
+        this.chart && this.chart.dispose()
+        this.earthSkin && this.earthSkin.dispose()
+        this.chart = null
+        this.earthSkin = null
+    },
+    watch: {
+        left(nv,ov){
+            if(Math.abs(nv-ov) >=5 && this.tootipPos.display == 'block'){
+                this.tootipPos.display = 'none'
+            }
+        },
+        top(nv,ov){
+            if(Math.abs(nv-ov) >=5 && this.tootipPos.display == 'block'){
+                this.tootipPos.display = 'none'
+            }
+        }
+    },
+    computed:{
+        get3Dserv() {
+            return[{
+                type: 'lines3D',
+                coordinateSystem: 'globe',
+                effect: {
+                    trailColor:'#fff',
+                    show: true,
+                    trailWidth: 3, 
+                    constantSpeed:50,
+                    trailLength: 0.2     
+                },
+                lineStyle:{
+                    width: 1,
+                    opacity: 0.5
+                },
+                data: this.earthData.map((item, i) =>({
+                    coords: [item.source_point,item.attacked_point],
+                    lineStyle: {
+                        color: this.colors[item.alert_level]
+                    }
+                }))
+            },{
+                type: 'scatter3D',  
+                coordinateSystem: 'globe',
+                symbolSize: 5,
+                data: this.scatterData
+            }]
+        },
+        scatterData(){
+            let data = this.earthData
+            return data.map((item, i)=>({
+                name: item.source_city,
+                value: item.source_point,
+                itemStyle: {
+                    color: skyblue
+                }
+            })).concat(data.map((item, i)=>({
+                name: item.attacked_city,
+                value: item.attacked_point,
+                info: item,
+                itemStyle: {
+                    color: this.colors[item.alert_level]
+                }
+            })))
+        },
+        effscatterData(){
+            let data = this.earthData
+            return data.map((item, i)=>({
+                name: item.source_city,
+                value: item.source_point,
+                symbolSize: 5,
+                itemStyle: {
+                    color: skyblue
+                }
+            })).concat(data.map((item, i)=>({
+                name: item.attacked_city,
+                value: item.attacked_point,
+                symbolSize: this.symbleSize(item.attack_count),
+                itemStyle: {
+                    color: this.colors[item.alert_level]
+                }
+            })))
+        },
+        get2Dserv() {
+            return [{
+                type: 'effectScatter',         
+                coordinateSystem: 'geo',      
+                rippleEffect: {
+                    brushType: 'stroke',
+                    scale:4,
+                    period:4
+                },
+                data:this.effscatterData
+            }]
+        },
+        left(){
+            return this.tootipPos.left
+        },
+        top(){
+            return this.tootipPos.top
+        }
     },
 }
 </script>
