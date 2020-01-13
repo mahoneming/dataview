@@ -1455,7 +1455,8 @@ export default {
             })))
         },
         effscatterData(){
-            let data = this.earthData
+            let data = this.earthData;
+
             return data.map((item, i)=>({
                 name: item.source_city,
                 value: item.source_point,
