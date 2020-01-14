@@ -356,16 +356,6 @@ const red = '#e6453b'      /*主颜色严重*/
 const grey = '#7289ab'     /*主颜色低危*/
 const skyblue = '#01cbe3'
 
-const toolFunc = p => `
-    <div class="tooltip-wraper">
-        <p><label>时间：</label><span>${p.attack_date}</span></p>
-        <p><label>被攻击资产：</label><span>${p.attacked_domain}</span></p>
-        <p><label>资产IP：</label><span>${p.victim_ip}(${p.attacked_city})</span></p>
-        <p><label>攻击源IP：</label><span>${p.source_ip}(${p.source_city})</span></p>
-        <p><label>攻击方式：</label><span class="red">${p.attack_mode}(${p.alert_level})</span></p>
-        <p><label>攻击次数：</label><span>${p.attack_count}</span></p>
-    </div>
-    `
 var echarts = require("echarts");
 import 'echarts-gl';
 import moment from "moment";
@@ -390,43 +380,31 @@ export default {
                 '低危':grey,
             },
             earthData: [{
-                victim_ip: "430.254.3.192",
                 attacked_point: [116.40, 39.90],
                 attack_date: '2019-06-10 18:40:43',
-                source_ip: '192.168.254.222', 
                 source_point: [123.43, 41.80],
                 alert_level: '严重',           
                 attacked_city: '北京',              
                 source_city: '辽宁',                
                 attack_count: 120,			
-                attacked_domain: 'baidu.com',		
-                attack_mode: 'SQL注入'	
             },
             {
-                victim_ip: "43.254.3.192",
                 attacked_point: [113.92, 22.52],    
                 attack_date: '2019-02-18 18:40:43', 
-                source_ip: '192.168.254.208',     
                 source_point: [123.43, 41.80],
                 alert_level: '高危',           
                 attacked_city: '深圳',           
                 source_city: '辽宁',              
-                attack_count: 250,					
-                attacked_domain: 'souhu.com',		
-                attack_mode: 'web登录尝试'
+                attack_count: 250,			
             },
             {
-                victim_ip: "43.254.3.192",
                 attacked_point: [84.87, 45.60],    
-                attack_date: '2019-02-18 18:40:43', 
-                source_ip: '192.168.254.208',     
+                attack_date: '2019-02-18 18:40:43',   
                 source_point: [123.43, 41.80],
                 alert_level: '中危',           
                 attacked_city: '克拉玛依',           
                 source_city: '辽宁',              
-                attack_count: 250,                  
-                attacked_domain: 'souhu.com',       
-                attack_mode: 'web登录尝试'
+                attack_count: 250,           
             }],
             tootipEl: document.getElementById('tooltip'),
             
@@ -602,7 +580,7 @@ export default {
         /* 处理数据 */
         setDateInfo(){
         },
-        /* 业务量 */
+        /* 执行率前5大机场业务量 */
         setBusinessChart(){
             let option = {
                 grid: {
@@ -691,12 +669,6 @@ export default {
             };
             this.chartBusiness = echarts.init(document.getElementById("business"));
             this.chartBusiness.setOption(option);
-        },
-        /* 省外用户 */
-        cityMap(cityData,min,max,convertData){
-            var data =cityData;
-            let mapOption = {};
-            this.mapChart.setOption(mapOption,"true");
         },
         //机场代理比重
         setProportion(){
@@ -977,7 +949,7 @@ export default {
             this.airRateChart = echarts.init(document.getElementById("airRate"));
             this.airRateChart.setOption(option);
         },
-        //小时趋势图
+        //'旅客', '货邮', '航班小时趋势图
         setHourChart(){
             var color = ['#1a9bfc', '#7049f0', '#01babc' ]
             var name = ['旅客', '货邮', '航班']
@@ -1391,10 +1363,12 @@ export default {
             clearInterval(this.timeIntervals);
             this.timeInterval = null;
         };
-        this.chart && this.chart.dispose()
-        this.earthSkin && this.earthSkin.dispose()
-        this.chart = null
-        this.earthSkin = null
+        this.chart && this.chart.dispose();
+        this.earthSkin && this.earthSkin.dispose();
+        this.chart = null;
+        this.earthSkin = null;
+        
+
     },
     watch: {
         left(nv,ov){
