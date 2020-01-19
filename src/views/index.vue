@@ -360,6 +360,7 @@ var echarts = require("echarts");
 import 'echarts-gl';
 import moment from "moment";
 import { getWeather } from "../api"
+import world from "../assets/img/world.jpg"
 import 'echarts/map/js/world.js'
 export default {
     name: 'index',
@@ -453,83 +454,91 @@ export default {
         let params = {};
         params.city = '广州';
         this.getWeather('广州');
-        this.initEarth()
-        this.drawData()
-        this.tootipEl = document.getElementById('tooltip')
+        this.changeMap();
     },
     methods: {
-        /* 地图函数 */
-        initEarth(){
-            const canvas = document.createElement('canvas');
-            this.earthSkin = echarts.init(canvas, null, {
-                width: 3800,height: 2800
-            });
-            this.earthSkin.setOption({
-                backgroundColor: 'rgba(0,8,34,0.1)',
-                geo: {
-                    map: 'world',
-                    left: 0, top: 0, right: 0, bottom: 0,
-                    boundingCoords: [[-180, 90], [180, -90]],//这是中心坐标点
-                    itemStyle: {
-                    normal: {
-                            areaColor: '#2455ad',
-                            borderColor:'#000c2d',
-                        },
-                        emphasis: {
-                            areaColor: '#357cf8'
-                        }
-                    },
-                    roam: false,
-                    label:{
-                        fontSize:18
-                    }
-                }
-            });
-            this.chart = echarts.init(document.getElementById('canvas'))
-            this.chart.setOption({
-                globe: {
-                    baseTexture: this.earthSkin,
+        /* 地图 */
+        changeMap(){
+            let dataBar = this.setBarData();
+            let option = {
+                globe: [{
+                    baseTexture: world,
+                    heightTexture: world,
                     shading: 'color',
-                    top: 'middle',
-                    left: 'center',
-                    globeRadius : 95,
                     viewControl: {
                         autoRotate: false,
                         targetCoord: [116.46, 39.92]
                     }
-                }
-            },);
+                },{
+                    baseTexture: world,
+                    heightTexture: world,
+                    shading: 'color',
+                    viewControl: {
+                        autoRotate: false,
+                        targetCoord: [116.46, 39.92]
+                    }
+                }],
+                series: [{
+                    type: 'bar3D',
+                    coordinateSystem: 'globe',
+                    data:dataBar,
+                    barSize: 1.2,
+                    minHeight: 0.2,
+                    globeIndex: 0 ,
+                    silent: true,
+                    itemStyle: {
+                        color: 'orange'
+                    }
+                },{
+                    type: 'lines3D',
+                    coordinateSystem: 'globe',
+                    globeIndex: 1 ,
+                    effect: {
+                            trailColor:'#fff',
+                            show: true,
+                            trailWidth: 3, 
+                            constantSpeed:20,
+                            trailLength: 0.2     
+                        },
+                        lineStyle:{
+                            width: 2,
+                            opacity: 0.5
+                        },
+                    data: this.earthData.map((item, i) =>({
+                    coords: [item.source_point,item.attacked_point],
+                    lineStyle: {
+                        color: this.colors[item.alert_level]
+                    }
+                }))
+                }]
+            };
+            this.chart = echarts.init(document.getElementById('canvas'));
+            this.chart.setOption(option);
+        },
+        setBarData(){
+            let data = this.earthData;
+            return data.map((item,i) =>([item.attacked_point[0],item.attacked_point[1],item.attack_count]))
         },
         changeMapCenter(){
             this.chart.setOption({
-                globe: {
-                    baseTexture: this.earthSkin,
+                globe: [{
+                    baseTexture: world,
+                    heightTexture: world,
                     shading: 'color',
-                    top: 'middle',
-                    left: 'center',
-                    globeRadius : 100,
                     viewControl: {
                         autoRotate: false,
-                        targetCoord: [123.43, 41.80]
+                        targetCoord: [116.46, 39.92]
                     }
-                }
+                },{
+                    baseTexture: world,
+                    heightTexture: world,
+                    shading: 'color',
+                    viewControl: {
+                        autoRotate: false,
+                        targetCoord: [116.46, 39.92]
+                    }
+                }],
             },);
-        },
-        drawData(){
-            this.chart.setOption({
-                series:this.get3Dserv
-            });
-            this.earthSkin.setOption({
-                series:this.get2Dserv
-            })
-        },
-        symbleSize(val){
-            val = val>200?200:val<50?50:val
-            return Math.ceil(val/10)
-        },
-        getPos(e){
-            this.tootipPos.left = e.offsetX
-            this.tootipPos.top = e.offsetY
         },
         /* 实时天气 */
         getWeather(city){
@@ -1364,107 +1373,11 @@ export default {
             this.timeInterval = null;
         };
         this.chart && this.chart.dispose();
-        this.earthSkin && this.earthSkin.dispose();
         this.chart = null;
-        this.earthSkin = null;
-        
-
     },
     watch: {
-        left(nv,ov){
-            if(Math.abs(nv-ov) >=5 && this.tootipPos.display == 'block'){
-                this.tootipPos.display = 'none'
-            }
-        },
-        top(nv,ov){
-            if(Math.abs(nv-ov) >=5 && this.tootipPos.display == 'block'){
-                this.tootipPos.display = 'none'
-            }
-        }
     },
     computed:{
-        get3Dserv() {
-            return[{
-                type: 'lines3D',
-                coordinateSystem: 'globe',
-                effect: {
-                    trailColor:'#fff',
-                    show: true,
-                    trailWidth: 3, 
-                    constantSpeed:50,
-                    trailLength: 0.2     
-                },
-                lineStyle:{
-                    width: 1,
-                    opacity: 0.5
-                },
-                data: this.earthData.map((item, i) =>({
-                    coords: [item.source_point,item.attacked_point],
-                    lineStyle: {
-                        color: this.colors[item.alert_level]
-                    }
-                }))
-            },{
-                type: 'scatter3D',  
-                coordinateSystem: 'globe',
-                symbolSize: 5,
-                data: this.scatterData
-            }]
-        },
-        scatterData(){
-            let data = this.earthData
-            return data.map((item, i)=>({
-                name: item.source_city,
-                value: item.source_point,
-                itemStyle: {
-                    color: skyblue
-                }
-            })).concat(data.map((item, i)=>({
-                name: item.attacked_city,
-                value: item.attacked_point,
-                info: item,
-                itemStyle: {
-                    color: this.colors[item.alert_level]
-                }
-            })))
-        },
-        effscatterData(){
-            let data = this.earthData;
-
-            return data.map((item, i)=>({
-                name: item.source_city,
-                value: item.source_point,
-                symbolSize: 5,
-                itemStyle: {
-                    color: skyblue
-                }
-            })).concat(data.map((item, i)=>({
-                name: item.attacked_city,
-                value: item.attacked_point,
-                symbolSize: this.symbleSize(item.attack_count),
-                itemStyle: {
-                    color: this.colors[item.alert_level]
-                }
-            })))
-        },
-        get2Dserv() {
-            return [{
-                type: 'effectScatter',         
-                coordinateSystem: 'geo',      
-                rippleEffect: {
-                    brushType: 'stroke',
-                    scale:4,
-                    period:4
-                },
-                data:this.effscatterData
-            }]
-        },
-        left(){
-            return this.tootipPos.left
-        },
-        top(){
-            return this.tootipPos.top
-        }
     },
 }
 </script>
