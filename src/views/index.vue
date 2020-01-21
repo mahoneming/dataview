@@ -24,14 +24,16 @@
     .now-time{
         line-height: 20px;
         color:#00f6ff;
-        width: 200px;
+        font-size: 16px;
+        width: 300px;
     }
     .now-time{
         position: absolute;
         line-height: 20px;
+        font-size: 16px;
         top: 0;
         color:#00f6ff;
-        width: 200px;
+        width: 300px;
     }
     .select-center{
         width: e("calc(100% - 710px)");
@@ -65,7 +67,7 @@
 }
 .title-name{
   color: #fff;
-  font-size: 24px;
+  font-size: 30px;
   font-weight: bold;
   text-shadow:5px 2px 6px #004878;
 }
@@ -258,14 +260,14 @@
                         <ul class="center-num center">
                             <li class="color-blue" v-for="(item,index) in nowPeople" :class="{'no-color':item =='i'}" :key="index+item">{{item}}</li>
                         </ul>
-                        <p class="new-title color-blue">实时旅客</p>
+                        <p class="new-title color-blue">实时旅客(人)</p>
                     </div>
                     
                     <div class="count-center fr yellow">
                         <ul class="center-num center">
                             <li class="color-yellow" v-for="(item,index) in nowInternationalPeople" :class="{'no-color':item =='i'}" :key="index+item">{{item}}</li>
                         </ul>
-                        <p class="new-title color-yellow">实时国际旅客</p>
+                        <p class="new-title color-yellow">实时国际旅客(人)</p>
                     </div>
                 </div>
             </div>
@@ -318,7 +320,7 @@
                     <ul class="center-num center">
                         <li class="color-perpo" v-for="(item,index) in nowAirs" :class="{'no-color':item =='i'}" :key="index+item">{{item}}</li>
                     </ul>
-                    <p class="new-title color-perpo" @click="changeMapCenter">实时航班</p>
+                    <p class="new-title color-perpo" @click="changeMapCenter">实时航班(次)</p>
                 </div>
                 <div class="count-center fr red">
                     <ul class="center-num center">
@@ -380,8 +382,7 @@ export default {
                 '4':grey,
             },
             earthData: [],
-            tootipEl: document.getElementById('tooltip'),
-            
+            earthIntervals:null,
             //数量
             nowPeople:["i","i","i","i","3","5"],
             nowInternationalPeople:["i","i","i","1","1","5"],
@@ -428,6 +429,7 @@ export default {
         params.city = '广州';
         this.getWeather('广州');
         this.getEarthDat();
+        this.earthIntervals = setInterval(this.getEarthDatIntervals,1*60*1000);
     },
     methods: {
         /* 地球数据 */
@@ -441,6 +443,62 @@ export default {
                 this.changeMap();
             });
         },
+        getEarthDatIntervals(){
+            getEarthDat().then(res =>{
+                if(res.data.code == 0){
+                    this.earthData = res.data.data;
+                }else{
+                    this.earthData = [];
+                }
+                let dataBar = this.setBarData();
+                let self = this;
+                this.chart.setOption({
+                    series: [{
+                        type: 'bar3D',
+                        coordinateSystem: 'globe',
+                        data:dataBar,
+                        barSize: 1.2,
+                        minHeight: 0.2,
+                        globeIndex: 0 ,
+                        silent: true,
+                        itemStyle: {
+                            color: 'orange'
+                        },
+                        label: {
+                            show: true,
+                            formatter:function(params){
+                                return params.data[2];
+                            },
+                            textStyle:{
+                                color:'#fff',
+                                backgroundColor: 'rgba(0,160,221,0.1)',
+                            }
+                        }
+                    },{
+                        type: 'lines3D',
+                        coordinateSystem: 'globe',
+                        globeIndex: 1 ,
+                        effect: {
+                                trailColor:'#fff',
+                                show: true,
+                                trailWidth: 3, 
+                                constantSpeed:20,
+                                trailLength: 0.2     
+                            },
+                            lineStyle:{
+                                width: 2,
+                                opacity: 0.5
+                            },
+                        data: self.earthData.map((item, i) =>({
+                        coords: [item.dpoint,item.apoint],
+                        lineStyle: {
+                            color: self.colors[item.airlineLevel]
+                        }
+                    }))
+                    }]
+                })
+            });
+        },
         /* 地图 */
         changeMap(){
             let dataBar = this.setBarData();
@@ -449,16 +507,28 @@ export default {
                     baseTexture: world,
                     heightTexture: world,
                     shading: 'color',
+                    globeRadius:80,
                     viewControl: {
                         autoRotate: true,
+                        autoRotateAfterStill:10,
+                        autoRotateSpeed:10,
+                        maxDistance:140,
+                        minDistance:140,
+                        panMouseButton:'left',
                         targetCoord: [116.46, 39.92]
                     }
                 },{
                     baseTexture: world,
                     heightTexture: world,
                     shading: 'color',
+                    globeRadius:80,
                     viewControl: {
                         autoRotate: true,
+                        autoRotateAfterStill:10,
+                        autoRotateSpeed:10,
+                        maxDistance:140,
+                        minDistance:140,
+                        panMouseButton:'left',
                         targetCoord: [116.46, 39.92]
                     }
                 }],
@@ -472,6 +542,16 @@ export default {
                     silent: true,
                     itemStyle: {
                         color: 'orange'
+                    },
+                    label: {
+                        show: true,
+                        formatter:function(params){
+                            return params.data[2];
+                        },
+                        textStyle:{
+                            color:'#fff',
+                            backgroundColor: 'rgba(0,160,221,0.1)',
+                        }
                     }
                 },{
                     type: 'lines3D',
@@ -497,10 +577,10 @@ export default {
                 }]
             };
             this.chart = echarts.init(document.getElementById('canvas'));
-            this.chart.setOption(option);
+            this.chart.setOption(option,"true");
             this.chart.on('click', params => {
                 console.log("ddddddddd",params);
-            })
+            });
         },
         setBarData(){
             let data = this.earthData;
@@ -519,7 +599,6 @@ export default {
                 };
                 arrs.push(arr);
             }
-            console.log(arrs)
             return arrs;
         },
         changeMapCenter(){
@@ -1374,6 +1453,10 @@ export default {
         if(this.timeInterval!=null){
             clearInterval(this.timeIntervals);
             this.timeInterval = null;
+        };
+        if(this.earthIntervals!=null){
+            clearInterval(this.earthIntervals);
+            this.earthIntervals = null;
         };
         this.chart && this.chart.dispose();
         this.chart = null;
