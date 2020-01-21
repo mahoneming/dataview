@@ -81,16 +81,15 @@ module.exports = {
     // https: false,
     // hotOnly: false,
     disableHostCheck: true, // 禁用webpack热重载检查 解决热更新失效问题
-    // proxy: {
-    //   '/api': {
-    //     // 目标 API 地址
-    //     target: 'http://192.168.6.163:8080/',
-    //     // 如果要代理 websockets
-    //     ws: true,
-    //     // 将主机标头的原点更改为目标URL
-    //     changeOrigin: false,
-    //   },
-    // },
+    proxy: {
+      '/api': {
+        target: 'http://120.79.234.53:8090/',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/api': '/api'
+        }
+      },
+    },
     // before: (app) => { },
   },
   // cors 相关 https://jakearchibald.com/2017/es-modules-in-browsers/#always-cors

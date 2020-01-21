@@ -24,4 +24,12 @@ export function getWeather(data) {
         method: 'get',
     })
 }
+// 地球数据
+export function getEarthDat() {
+    return axios.request({
+        url: '/api/earth/earthData',
+        method: 'get',
+    })
+}
+
 

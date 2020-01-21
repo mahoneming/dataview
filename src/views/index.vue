@@ -296,7 +296,6 @@
           <!-- 地图 -->
           <div class="build-map">
             <div id="canvas" class="tutorial"></div>
-            <div id="tooltip" :style="{left:tootipPos.left+'px',top:tootipPos.top+'px',display:tootipPos.display}"></div>
           </div>
           <div class="map-info">
                 <table>
@@ -350,16 +349,16 @@
 </template>
 
 <script>
-const blue = '#0780df'     /*主颜色中危*/
+const blue = '#3580dd'     /*主颜色中危*/
 const yellow = '#ff9f35'   /*主颜色高危*/
 const red = '#e6453b'      /*主颜色严重*/
-const grey = '#7289ab'     /*主颜色低危*/
+const grey = '#30d563'     /*主颜色低危*/
 const skyblue = '#01cbe3'
 
 var echarts = require("echarts");
 import 'echarts-gl';
 import moment from "moment";
-import { getWeather } from "../api"
+import { getWeather ,getEarthDat} from "../api"
 import world from "../assets/img/world.jpg"
 import 'echarts/map/js/world.js'
 export default {
@@ -375,38 +374,12 @@ export default {
                 display: 'none'
             },
             colors:{
-                '严重':red,
-                '高危':yellow,
-                '中危':blue,
-                '低危':grey,
+                '1':red,
+                '2':yellow,
+                '3':blue,
+                '4':grey,
             },
-            earthData: [{
-                attacked_point: [116.40, 39.90],
-                attack_date: '2019-06-10 18:40:43',
-                source_point: [123.43, 41.80],
-                alert_level: '严重',           
-                attacked_city: '北京',              
-                source_city: '辽宁',                
-                attack_count: 120,			
-            },
-            {
-                attacked_point: [113.92, 22.52],    
-                attack_date: '2019-02-18 18:40:43', 
-                source_point: [123.43, 41.80],
-                alert_level: '高危',           
-                attacked_city: '深圳',           
-                source_city: '辽宁',              
-                attack_count: 250,			
-            },
-            {
-                attacked_point: [84.87, 45.60],    
-                attack_date: '2019-02-18 18:40:43',   
-                source_point: [123.43, 41.80],
-                alert_level: '中危',           
-                attacked_city: '克拉玛依',           
-                source_city: '辽宁',              
-                attack_count: 250,           
-            }],
+            earthData: [],
             tootipEl: document.getElementById('tooltip'),
             
             //数量
@@ -454,9 +427,20 @@ export default {
         let params = {};
         params.city = '广州';
         this.getWeather('广州');
-        this.changeMap();
+        this.getEarthDat();
     },
     methods: {
+        /* 地球数据 */
+        getEarthDat(){
+            getEarthDat().then(res =>{
+                if(res.data.code == 0){
+                    this.earthData = res.data.data;
+                }else{
+                    this.earthData = [];
+                }
+                this.changeMap();
+            });
+        },
         /* 地图 */
         changeMap(){
             let dataBar = this.setBarData();
@@ -466,7 +450,7 @@ export default {
                     heightTexture: world,
                     shading: 'color',
                     viewControl: {
-                        autoRotate: false,
+                        autoRotate: true,
                         targetCoord: [116.46, 39.92]
                     }
                 },{
@@ -474,7 +458,7 @@ export default {
                     heightTexture: world,
                     shading: 'color',
                     viewControl: {
-                        autoRotate: false,
+                        autoRotate: true,
                         targetCoord: [116.46, 39.92]
                     }
                 }],
@@ -505,19 +489,38 @@ export default {
                             opacity: 0.5
                         },
                     data: this.earthData.map((item, i) =>({
-                    coords: [item.source_point,item.attacked_point],
+                    coords: [item.dpoint,item.apoint],
                     lineStyle: {
-                        color: this.colors[item.alert_level]
+                        color: this.colors[item.airlineLevel]
                     }
                 }))
                 }]
             };
             this.chart = echarts.init(document.getElementById('canvas'));
             this.chart.setOption(option);
+            this.chart.on('click', params => {
+                console.log("ddddddddd",params);
+            })
         },
         setBarData(){
             let data = this.earthData;
-            return data.map((item,i) =>([item.attacked_point[0],item.attacked_point[1],item.attack_count]))
+            let arrs = [];
+            for(let i in data){
+                let arr = [];
+                arr.push(data[i].dpoint[0]);
+                arr.push(data[i].dpoint[1]);
+                arr.push(data[i].lkCnt);
+                if(i == 0){
+                    let item = [];
+                    item.push(data[i].dpoint[0]);
+                    item.push(data[i].dpoint[1]);
+                    item.push(0);
+                    arrs.push(item);
+                };
+                arrs.push(arr);
+            }
+            console.log(arrs)
+            return arrs;
         },
         changeMapCenter(){
             this.chart.setOption({
@@ -526,7 +529,7 @@ export default {
                     heightTexture: world,
                     shading: 'color',
                     viewControl: {
-                        autoRotate: false,
+                        autoRotate: true,
                         targetCoord: [116.46, 39.92]
                     }
                 },{
@@ -534,7 +537,7 @@ export default {
                     heightTexture: world,
                     shading: 'color',
                     viewControl: {
-                        autoRotate: false,
+                        autoRotate: true,
                         targetCoord: [116.46, 39.92]
                     }
                 }],
