@@ -429,7 +429,7 @@ export default {
         params.city = '广州';
         this.getWeather('广州');
         this.getEarthDat();
-        this.earthIntervals = setInterval(this.getEarthDatIntervals,1*60*1000);
+        this.earthIntervals = setInterval(this.getEarthDatIntervals,36*1000);
     },
     methods: {
         /* 地球数据 */
@@ -511,7 +511,6 @@ export default {
                     viewControl: {
                         autoRotate: true,
                         autoRotateAfterStill:10,
-                        autoRotateSpeed:10,
                         maxDistance:140,
                         minDistance:140,
                         panMouseButton:'left',
@@ -525,7 +524,6 @@ export default {
                     viewControl: {
                         autoRotate: true,
                         autoRotateAfterStill:10,
-                        autoRotateSpeed:10,
                         maxDistance:140,
                         minDistance:140,
                         panMouseButton:'left',
