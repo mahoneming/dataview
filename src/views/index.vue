@@ -326,7 +326,7 @@
                     <ul class="center-num center">
                         <li class="color-red" v-for="(item,index) in nowGoods" :class="{'no-color':item =='i'}" :key="index+item">{{item}}</li>
                     </ul>
-                    <p class="new-title color-red">实时邮货</p>
+                    <p class="new-title color-red" @click="setBar">实时邮货</p>
                 </div>
           </div>
         </div>
@@ -382,7 +382,10 @@ export default {
                 '4':grey,
             },
             earthData: [],
+            dataList:[],
             earthIntervals:null,
+            barIntervals:null,
+            count:14,
             //数量
             nowPeople:["i","i","i","i","3","5"],
             nowInternationalPeople:["i","i","i","1","1","5"],
@@ -435,26 +438,72 @@ export default {
         /* 地球数据 */
         getEarthDat(){
             getEarthDat().then(res =>{
+                let legend = [];
                 if(res.data.code == 0){
-                    this.earthData = res.data.data;
+                    let lists = res.data.data;
+                    let earthData = [];
+                    this.dataList = res.data.data;
+                    for(let list of lists){
+                        earthData = earthData.concat(list.data);
+                        legend.push('text'+list.index);
+                    }
+                    this.earthData = earthData;
                 }else{
                     this.earthData = [];
+                    this.dataList = [];
                 }
-                this.changeMap();
+                this.changeMap(legend);
             });
         },
         getEarthDatIntervals(){
             getEarthDat().then(res =>{
+                this.count = 14;
+                let legend = [];
+                if(this.barIntervals!=null){
+                    clearInterval(this.barIntervals);
+                    this.barIntervals = null;
+                };
                 if(res.data.code == 0){
-                    this.earthData = res.data.data;
+                    let lists = res.data.data;
+                    this.dataList = res.data.data;
+                    let earthData = [];
+                    for(let list of lists){
+                        earthData = earthData.concat(list.data);
+                        legend.push('text'+list.index);
+                    }
+                    this.earthData = earthData;
                 }else{
                     this.earthData = [];
                 }
                 let dataBar = this.setBarData();
                 let self = this;
-                this.chart.setOption({
-                    series: [{
+                let series = [{
+                    type: 'lines3D',
+                    coordinateSystem: 'globe',
+                    globeIndex: 1 ,
+                    effect: {
+                            trailColor:'#fff',
+                            show: true,
+                            trailWidth: 3, 
+                            constantSpeed:20,
+                            trailLength: 0.2     
+                        },
+                        lineStyle:{
+                            width: 2,
+                            opacity: 0.5
+                        },
+                    data: this.earthData.map((item, i) =>({
+                    coords: [item.dpoint,item.apoint],
+                    lineStyle: {
+                        color: this.colors[item.airlineLevel]
+                    }
+                    }))
+                }];
+                for(let list of this.dataList){
+                    let dataBar = this.setBarData(list.data);
+                    let item = {
                         type: 'bar3D',
+                        name:'text'+list.index,
                         coordinateSystem: 'globe',
                         data:dataBar,
                         barSize: 1.2,
@@ -474,84 +523,66 @@ export default {
                                 backgroundColor: 'rgba(0,160,221,0.1)',
                             }
                         }
-                    },{
-                        type: 'lines3D',
-                        coordinateSystem: 'globe',
-                        globeIndex: 1 ,
-                        effect: {
-                                trailColor:'#fff',
-                                show: true,
-                                trailWidth: 3, 
-                                constantSpeed:20,
-                                trailLength: 0.2     
-                            },
-                            lineStyle:{
-                                width: 2,
-                                opacity: 0.5
-                            },
-                        data: self.earthData.map((item, i) =>({
-                        coords: [item.dpoint,item.apoint],
-                        lineStyle: {
-                            color: self.colors[item.airlineLevel]
+                    }
+                    series.push(item);
+                }
+                this.chart.clear();
+                this.chart.setOption({
+                        legend: {
+                        selectedMode: 'single',
+                        orient: 'vertical',
+                        right: 10,
+                        top: 20,
+                        bottom: 20,
+                        data:legend,
+                        show:false,
+                    },
+                    globe: [{
+                        baseTexture: world,
+                        heightTexture: world,
+                        shading: 'color',
+                        globeRadius:75,
+                        viewControl: {
+                            autoRotate: true,
+                            // autoRotateAfterStill:10,
+                            maxDistance:140,
+                            minDistance:140,
+                            panMouseButton:'left',
                         }
-                    }))
-                    }]
-                })
+                    },{
+                        baseTexture: world,
+                        heightTexture: world,
+                        shading: 'color',
+                        globeRadius:75,
+                        viewControl: {
+                            autoRotate: true,
+                            // autoRotateAfterStill:10,
+                            maxDistance:140,
+                            minDistance:140,
+                            panMouseButton:'left',
+                        }
+                    }],
+                    series: series
+                });
+                this.barIntervals = setInterval(this.setBar,2*1000);
             });
         },
+        setBar(){
+            let i = this.count;
+            let name = 'text'+i;
+            console.log(name);
+            this.chart.dispatchAction({
+                type: 'legendSelect',
+                name: name// 
+            });
+            this.count++;
+            if(this.count == 18){
+                this.count = 0;
+            }
+        },
         /* 地图 */
-        changeMap(){
-            let dataBar = this.setBarData();
-            let option = {
-                globe: [{
-                    baseTexture: world,
-                    heightTexture: world,
-                    shading: 'color',
-                    globeRadius:80,
-                    viewControl: {
-                        autoRotate: true,
-                        autoRotateAfterStill:10,
-                        maxDistance:140,
-                        minDistance:140,
-                        panMouseButton:'left',
-                        targetCoord: [116.46, 39.92]
-                    }
-                },{
-                    baseTexture: world,
-                    heightTexture: world,
-                    shading: 'color',
-                    globeRadius:80,
-                    viewControl: {
-                        autoRotate: true,
-                        autoRotateAfterStill:10,
-                        maxDistance:140,
-                        minDistance:140,
-                        panMouseButton:'left',
-                        targetCoord: [116.46, 39.92]
-                    }
-                }],
-                series: [{
-                    type: 'bar3D',
-                    coordinateSystem: 'globe',
-                    data:dataBar,
-                    barSize: 1.2,
-                    minHeight: 0.2,
-                    globeIndex: 0 ,
-                    silent: true,
-                    itemStyle: {
-                        color: 'orange'
-                    },
-                    label: {
-                        show: true,
-                        formatter:function(params){
-                            return params.data[2];
-                        },
-                        textStyle:{
-                            color:'#fff',
-                            backgroundColor: 'rgba(0,160,221,0.1)',
-                        }
-                    }
-                },{
+        changeMap(legend){
+            let series = [{
                     type: 'lines3D',
                     coordinateSystem: 'globe',
                     globeIndex: 1 ,
@@ -572,26 +603,93 @@ export default {
                         color: this.colors[item.airlineLevel]
                     }
                 }))
-                }]
+            }];
+            for(let list of this.dataList){
+                let dataBar = this.setBarData(list.data);
+                let item = {
+                    type: 'bar3D',
+                    name:'text'+list.index,
+                    coordinateSystem: 'globe',
+                    data:dataBar,
+                    barSize: 1.2,
+                    minHeight: 0.2,
+                    globeIndex: 0 ,
+                    silent: true,
+                    itemStyle: {
+                        color: 'orange'
+                    },
+                    label: {
+                        show: true,
+                        formatter:function(params){
+                            return params.data[2];
+                        },
+                        textStyle:{
+                            color:'#fff',
+                            backgroundColor: 'rgba(0,160,221,0.1)',
+                        }
+                    }
+                }
+                series.push(item);
+            }
+            let option = {
+                legend: {
+                    selectedMode: 'single',
+                    orient: 'vertical',
+                    right: 10,
+                    top: 20,
+                    bottom: 20,
+                    data:legend,
+                    show:false,
+                },
+                globe: [{
+                    baseTexture: world,
+                    heightTexture: world,
+                    shading: 'color',
+                    globeRadius:75,
+                    viewControl: {
+                        autoRotate: true,
+                        // autoRotateAfterStill:10,
+                        maxDistance:140,
+                        alpha:0,
+                        minDistance:140,
+                        panMouseButton:'left',
+                    }
+                },{
+                    baseTexture: world,
+                    heightTexture: world,
+                    shading: 'color',
+                    globeRadius:75,
+                    viewControl: {
+                        autoRotate: true,
+                        // autoRotateAfterStill:10,
+                        alpha:0,
+                        maxDistance:140,
+                        minDistance:140,
+                        panMouseButton:'left',
+                    }
+                }],
+                series: series
             };
             this.chart = echarts.init(document.getElementById('canvas'));
-            this.chart.setOption(option,"true");
+            this.chart.setOption(option);
+            
+            this.barIntervals = setInterval(this.setBar,2*1000);
             this.chart.on('click', params => {
                 console.log("ddddddddd",params);
             });
         },
-        setBarData(){
-            let data = this.earthData;
+        setBarData(dataList){
+            let data = dataList;
             let arrs = [];
             for(let i in data){
                 let arr = [];
-                arr.push(data[i].dpoint[0]);
-                arr.push(data[i].dpoint[1]);
+                arr.push(data[i].apoint[0]);
+                arr.push(data[i].apoint[1]);
                 arr.push(data[i].lkCnt);
                 if(i == 0){
                     let item = [];
-                    item.push(data[i].dpoint[0]);
-                    item.push(data[i].dpoint[1]);
+                    item.push(data[i].apoint[0]);
+                    item.push(data[i].apoint[1]);
                     item.push(0);
                     arrs.push(item);
                 };
@@ -1455,6 +1553,10 @@ export default {
         if(this.earthIntervals!=null){
             clearInterval(this.earthIntervals);
             this.earthIntervals = null;
+        };
+        if(this.barIntervals!=null){
+            clearInterval(this.barIntervals);
+            this.barIntervals = null;
         };
         this.chart && this.chart.dispose();
         this.chart = null;
