@@ -95,6 +95,7 @@
 }
 .down-center{
   width: 1050px;
+  height:600px;
   position: relative;
   .bottom-style{
       position: absolute;
@@ -179,11 +180,13 @@
   height: 100%;
 }
 .build-map{
-  .tutorial{
-    width: 1050px;
-    height: 600px;
-    z-index: 3;
-  }
+    position: absolute;
+    top: -200px;
+    .tutorial{
+        width: 1050px;
+        height: 980px;
+        z-index: 3;
+    }
 }
 .count-center{
     width: 25%;
@@ -277,7 +280,7 @@
             </div>
         </div>
       <!-- 三大块内容 -->
-      <div class="clear">
+      <div class="clearfix">
         <!-- 左侧表格 -->
         <div class="down-left fl mr18">
             <div class="small-count mb15">
@@ -508,6 +511,7 @@ export default {
                         data:dataBar,
                         barSize: 1.2,
                         minHeight: 0.2,
+                        maxHeight: 100,
                         globeIndex: 0 ,
                         silent: true,
                         itemStyle: {
@@ -541,7 +545,8 @@ export default {
                         baseTexture: world,
                         heightTexture: world,
                         shading: 'color',
-                        globeRadius:75,
+                        globeRadius:35,
+                        globeOuterRadius:45,
                         viewControl: {
                             autoRotate: true,
                             // autoRotateAfterStill:10,
@@ -553,7 +558,8 @@ export default {
                         baseTexture: world,
                         heightTexture: world,
                         shading: 'color',
-                        globeRadius:75,
+                        globeRadius:35,
+                        globeOuterRadius:45,
                         viewControl: {
                             autoRotate: true,
                             // autoRotateAfterStill:10,
@@ -570,7 +576,6 @@ export default {
         setBar(){
             let i = this.count;
             let name = 'text'+i;
-            console.log(name);
             this.chart.dispatchAction({
                 type: 'legendSelect',
                 name: name// 
@@ -613,6 +618,7 @@ export default {
                     data:dataBar,
                     barSize: 1.2,
                     minHeight: 0.2,
+                    maxHeight: 100,
                     globeIndex: 0 ,
                     silent: true,
                     itemStyle: {
@@ -645,7 +651,8 @@ export default {
                     baseTexture: world,
                     heightTexture: world,
                     shading: 'color',
-                    globeRadius:75,
+                    globeRadius:35,
+                    globeOuterRadius:45,
                     viewControl: {
                         autoRotate: true,
                         // autoRotateAfterStill:10,
@@ -658,7 +665,8 @@ export default {
                     baseTexture: world,
                     heightTexture: world,
                     shading: 'color',
-                    globeRadius:75,
+                    globeRadius:35,
+                    globeOuterRadius:45,
                     viewControl: {
                         autoRotate: true,
                         // autoRotateAfterStill:10,
